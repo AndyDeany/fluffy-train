@@ -88,9 +88,7 @@ with description(ENDPOINT_NAME):
 
         with it("should return an appropriate 400 message if the quantity json field is missing"):
             clear_test_codes_from_data_store()
-            json = {
-                "quantity": 50,
-            }
+            json = {}
             response = requests.post(ENDPOINT_URL, headers=BRAND_AUTHORIZATION_HEADERS, json=json)
             expect(response.status_code).to(equal(400))
             expected_message = "Missing json field 'quantity'."
