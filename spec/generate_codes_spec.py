@@ -1,7 +1,9 @@
 """File containing unit tests for the functionality of the /credit-policies endpoint."""
 # pylint: disable=invalid-name,line-too-long
 
-from expects import expect, equal
+import re
+
+from expects import expect, equal, be
 from mamba import description, context, it
 import requests
 
@@ -14,6 +16,7 @@ from lib.discount_code import DiscountCodesDataStore
 def get_all_brand_codes(brand_id):
     """Return all discount codes from the data store that are associated with the given brand."""
     test_brand_codes = []
+    DiscountCodesDataStore.read_from_json()
     for code in DiscountCodesDataStore.codes:
         if code.brand_id == brand_id:
             test_brand_codes.append(code)
@@ -31,7 +34,7 @@ def clear_test_codes_from_data_store():
     This ensures a blank slate before running tests.
     """
     for code in get_all_test_brand_codes():
-        DiscountCodesDataStore.codes.remove(code)
+        DiscountCodesDataStore.remove_discount_code(code)
 
 
 ENDPOINT_NAME = "/generate-codes"
@@ -52,7 +55,14 @@ with description(ENDPOINT_NAME):
             }
             response = requests.post(ENDPOINT_URL, headers=BRAND_AUTHORIZATION_HEADERS, json=json)
             expect(response.status_code).to(equal(200))
-            expect(len(get_all_test_brand_codes())).to(equal(creation_quantity))
+            created_codes = get_all_test_brand_codes()
+            expect(len(created_codes)).to(equal(creation_quantity))
+            for discount_code in created_codes:
+                expect(len(discount_code.code)).to(equal(12))
+                valid_characters = "ABCDEFGHJKMNPQRTUVWXY346789"    # Exclude characters that look similar
+                expect(re.search(r"[^{}]".format(valid_characters), discount_code.code)).to(be(None))
+                expect(discount_code.brand_id).to(equal(TEST_BRAND_ACCOUNT_ID))
+                expect(discount_code.user_id).to(equal(None))
 
     with context("invalid POST requests"):
         with it("should not create codes for an authorized request from a user account"):

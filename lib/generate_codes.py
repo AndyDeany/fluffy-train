@@ -29,8 +29,6 @@ class GenerateCodes(Resource):
 
         expected_fields = self.POST_REQUEST_SCHEMA.declared_fields.keys()
         missing_fields = sorted([f for f in expected_fields if f not in request.json])
-        print(expected_fields)
-        print(missing_fields)
         if missing_fields:
             message = "Missing json field"
             if len(missing_fields) > 1:
@@ -52,5 +50,4 @@ class GenerateCodes(Resource):
 
         for _ in range(request.json["quantity"]):
             DiscountCodesDataStore.add_discount_code(DiscountCode(account_id))
-
         return {}, 200
