@@ -8,7 +8,7 @@ ENDPOINT_NAME = "/generate-codes"
 ENDPOINT_URL = BASE_URL + ENDPOINT_NAME
 
 
-with description(ENDPOINT_NAME):
+with description("/generate-codes"):
     with context("valid POST requests"):
         with it("should create codes for a valid authorized request from a brand account"):
             clear_test_codes_from_data_store()

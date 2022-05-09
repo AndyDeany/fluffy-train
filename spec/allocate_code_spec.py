@@ -23,7 +23,7 @@ def search_for_user_code():
     UserCodesDataStore.find_code(TEST_USER_ACCOUNT_ID, TEST_BRAND_ACCOUNT_ID)
 
 
-with description(ENDPOINT_NAME):
+with description("/allocate-code"):
     with context("valid POST requests"):
         with it("should allocate a code for a valid authorized request from a user account"):
             clear_test_codes_from_data_store()
