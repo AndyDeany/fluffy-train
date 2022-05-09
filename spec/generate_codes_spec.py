@@ -66,7 +66,7 @@ with description(ENDPOINT_NAME):
             expect(response.json()).to(equal({"message": expected_message}))
             expect(len(get_all_brand_codes(TEST_USER_ACCOUNT_ID))).to(equal(0))
 
-        with it("should not work for an unauthorized request"):
+        with it("should not work for a request with an unauthorized token"):
             clear_test_codes_from_data_store()
             json = {
                 "quantity": 80,
@@ -74,6 +74,16 @@ with description(ENDPOINT_NAME):
             response = requests.post(ENDPOINT_URL, headers=UNAUTHORIZED_HEADERS, json=json)
             expect(response.status_code).to(equal(401))
             expected_message = "Unauthorized. Invalid or expired token."
+            expect(response.json()).to(equal({"message": expected_message}))
+
+        with it("should not work for a request with no authorization token"):
+            clear_test_codes_from_data_store()
+            json = {
+                "quantity": 80,
+            }
+            response = requests.post(ENDPOINT_URL, json=json)
+            expect(response.status_code).to(equal(401))
+            expected_message = "Unauthorized. Missing authorization token."
             expect(response.json()).to(equal({"message": expected_message}))
 
         with it("should return an appropriate 400 message if the quantity json field is missing"):
