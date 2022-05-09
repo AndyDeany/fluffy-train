@@ -7,6 +7,7 @@ from flask_restful import Api
 from werkzeug.exceptions import HTTPException
 
 from lib.generate_codes import GenerateCodes
+from lib.allocate_code import AllocateCode
 
 
 app = Flask(__name__)
@@ -33,4 +34,5 @@ class EnhancedApi(Api):
 if __name__ == "__main__":
     api = EnhancedApi(app)
     api.add_resource(GenerateCodes, "/generate-codes")
+    api.add_resource(AllocateCode, "/allocate-code")
     app.run(debug=True)

@@ -16,6 +16,10 @@ class DiscountCode:
         self.brand_id = brand_id
         self.user_id = None
 
+    def __eq__(self, other):
+        return (self.code == other.code and
+                self.brand_id == other.brand_id and self.user_id == other.user_id)
+
     @classmethod
     def generate_unique_random_code(cls, length):
         """Generate a unique human readable alphanumeric code."""
@@ -72,7 +76,7 @@ class DiscountCodesDataStore(CodesDataStore):
     JSON_FILE = "data/discount_codes.json"
 
     @classmethod
-    def allocate_discount_code_from_brand(cls, brand_id, user_id):
+    def allocate_discount_code(cls, brand_id, user_id):
         """Allocate a discount code from given brand to the given user and return it.
 
         The discount code is removed from the list of available discount codes
