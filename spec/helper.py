@@ -1,14 +1,17 @@
 """File containing general information shared between multiple tests."""
 
+import json
 import re as _re
 from mamba import description, context, it
 from expects import expect, equal, be, contain, raise_error
 import requests
 
-from lib.discount_code import DiscountCodesDataStore
+from lib.discount_code import DiscountCodesDataStore, UserCodesDataStore
 
 
 BASE_URL = "http://127.0.0.1:5000"
+GENERATE_CODES_ENDPOINT_NAME = "/generate-codes"
+ALLOCATE_CODE_ENDPOINT_NAME = "/allocate-code"
 
 TEST_BRAND_ACCOUNT_ID = "1ec1e6bc-7906-4859-8edc-eddf6185ced8"
 TEST_BRAND_AUTHORIZATION_HEADERS = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"}
@@ -44,9 +47,16 @@ def get_all_test_brand_codes():
 
 
 def clear_test_codes_from_data_store():
-    """Purge all discount codes from the data store that are associated with the test brand.
+    """Purge all discount codes from the data store that are associated with the test brand/user.
 
     This ensures a blank slate before running tests.
     """
     for code in get_all_test_brand_codes():
         DiscountCodesDataStore.remove_discount_code(code)
+
+    codes_to_remove = []
+    for code in UserCodesDataStore.codes:
+        if code.brand_id == TEST_BRAND_ACCOUNT_ID and code.user_id == TEST_USER_ACCOUNT_ID:
+            codes_to_remove.append(code)
+    for code in codes_to_remove:
+        UserCodesDataStore.remove_discount_code(code)

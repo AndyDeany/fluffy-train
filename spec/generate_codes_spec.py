@@ -4,8 +4,7 @@
 from spec.helper import *
 
 
-ENDPOINT_NAME = "/generate-codes"
-ENDPOINT_URL = BASE_URL + ENDPOINT_NAME
+ENDPOINT_URL = BASE_URL + GENERATE_CODES_ENDPOINT_NAME
 
 
 with description("/generate-codes"):
@@ -56,7 +55,7 @@ with description("/generate-codes"):
             expected_message = "Unauthorized. Missing authorization token."
             expect(response.json()).to(equal({"message": expected_message}))
 
-        with it("should return an appropriate 400 message if the quantity json field is missing"):
+        with it("should return an appropriate 400 message if the 'quantity' json field is missing"):
             clear_test_codes_from_data_store()
             json = {}
             response = requests.post(ENDPOINT_URL, headers=TEST_BRAND_AUTHORIZATION_HEADERS, json=json)

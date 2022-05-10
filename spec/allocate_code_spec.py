@@ -3,16 +3,16 @@
 
 from spec.helper import *
 
-from lib.discount_code import UserCodesDataStore, DiscountCodeNotFound
+from lib.discount_code import DiscountCode, UserCodesDataStore, DiscountCodesDataStore, DiscountCodeNotFound
 
 
-ENDPOINT_NAME = "/allocate-code"
-ENDPOINT_URL = BASE_URL + ENDPOINT_NAME
+ENDPOINT_URL = BASE_URL + ALLOCATE_CODE_ENDPOINT_NAME
 
 
 def generate_test_codes():
     """Generate some discount codes for the test brand for the purposes of testing user codes."""
-    requests.post(ENDPOINT_URL, headers=TEST_BRAND_AUTHORIZATION_HEADERS, json={"quantity": 20})
+    requests.post(BASE_URL + GENERATE_CODES_ENDPOINT_NAME,
+                  headers=TEST_BRAND_AUTHORIZATION_HEADERS, json={"quantity": 20}).json()
 
 
 def search_for_user_code():
@@ -35,7 +35,9 @@ with description("/allocate-code"):
             response = requests.post(ENDPOINT_URL, headers=TEST_USER_AUTHORIZATION_HEADERS, json=json)
             expect(response.status_code).to(equal(200))
             expect(list(response.json().keys())).to(equal(["discount_code"]))
-            allocated_code = response.json()["discount_code"]
+            allocated_code = DiscountCode(TEST_BRAND_ACCOUNT_ID)
+            allocated_code.code = response.json()["discount_code"]
+            allocated_code.user_id = TEST_USER_ACCOUNT_ID
 
             available_codes_after_allocation = get_all_test_brand_codes()
             codes_removed = len(available_codes_before_allocation) - len(available_codes_after_allocation)
@@ -45,7 +47,6 @@ with description("/allocate-code"):
             expect(available_codes_after_allocation).not_to(contain(allocated_code))
 
             test_code_is_valid(allocated_code)
-            expect(allocated_code.user_id).to(equal(TEST_USER_ACCOUNT_ID))
             expect(search_for_user_code).not_to(raise_error(DiscountCodeNotFound))
 
         with it("should return the same code if a repeated authorized request is made"):
@@ -61,16 +62,17 @@ with description("/allocate-code"):
             response = requests.post(ENDPOINT_URL, headers=TEST_USER_AUTHORIZATION_HEADERS, json=json)
             expect(response.status_code).to(equal(200))
             expect(list(response.json().keys())).to(equal(["discount_code"]))
-            allocated_code = response.json()["discount_code"]
+            allocated_code = DiscountCode(TEST_BRAND_ACCOUNT_ID)
+            allocated_code.code = response.json()["discount_code"]
+            allocated_code.user_id = TEST_USER_ACCOUNT_ID
 
             available_codes_after_repeat = get_all_test_brand_codes()
             codes_removed = len(available_codes_before_repeat) - len(available_codes_after_repeat)
             expect(codes_removed).to(equal(0))
 
-            expect(available_codes_before_allocation).not_to(contain(allocated_code))
+            expect(available_codes_before_repeat).not_to(contain(allocated_code))
 
             test_code_is_valid(allocated_code)
-            expect(allocated_code.user_id).to(equal(TEST_USER_ACCOUNT_ID))
             expect(search_for_user_code).not_to(raise_error(DiscountCodeNotFound))
 
         with it("should return a suitable message if there are no remaining codes"):
@@ -137,7 +139,7 @@ with description("/allocate-code"):
             expect(codes_removed).to(equal(0))
             expect(search_for_user_code).to(raise_error(DiscountCodeNotFound))
 
-        with it("should return an appropriate 400 message if the brand_id json field is missing"):
+        with it("should return an appropriate 400 message if the 'brand_id' json field is missing"):
             clear_test_codes_from_data_store()
             generate_test_codes()
             available_codes_before_allocation = get_all_test_brand_codes()
@@ -146,7 +148,6 @@ with description("/allocate-code"):
             expect(response.status_code).to(equal(400))
             expected_message = "Missing json field 'brand_id'."
             expect(response.json()).to(equal({"message": expected_message}))
-            expect(len(get_all_test_brand_codes())).to(equal(0))
 
             available_codes_after_allocation = get_all_test_brand_codes()
             codes_removed = len(available_codes_before_allocation) - len(available_codes_after_allocation)
@@ -165,7 +166,6 @@ with description("/allocate-code"):
             expect(response.status_code).to(equal(400))
             expected_message = "Bad Request. Unknown field 'planet'."
             expect(response.json()).to(equal({"message": expected_message}))
-            expect(len(get_all_test_brand_codes())).to(equal(0))
 
             available_codes_after_allocation = get_all_test_brand_codes()
             codes_removed = len(available_codes_before_allocation) - len(available_codes_after_allocation)
