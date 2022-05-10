@@ -55,6 +55,7 @@ class AllocateCode(Resource):
             try:
                 discount_code = DiscountCodesDataStore.allocate_discount_code(brand_id, account_id)
                 UserCodesDataStore.add_discount_code(discount_code)
+                # share_contact_information_with_brand(brand_id)    # TODO: implement this
             except DiscountCodeNotFound:
                 message = f"There are no codes available for the brand with ID '{brand_id}'."
                 return {"message": message}, 200
