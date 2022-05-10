@@ -17,8 +17,10 @@ class DiscountCode:
         self.user_id = None
 
     def __eq__(self, other):
-        return (self.code == other.code and
-                self.brand_id == other.brand_id and self.user_id == other.user_id)
+        return self.code == other.code
+
+    def __repr__(self):
+        return f"DiscountCode({self.code=}, {self.brand_id=}, {self.user_id=})"
 
     @classmethod
     def generate_unique_random_code(cls, length):
@@ -48,12 +50,14 @@ class CodesDataStore:
     @classmethod
     def add_discount_code(cls, discount_code: DiscountCode):
         """Add the given discount_code to the data store."""
+        cls.read_from_json()
         cls.codes.append(discount_code)
         cls.write_to_json()
 
     @classmethod
     def remove_discount_code(cls, discount_code: DiscountCode):
         """Remove the given discount_code from the data store."""
+        cls.read_from_json()
         cls.codes.remove(discount_code)
         cls.write_to_json()
 
@@ -81,6 +85,7 @@ class DiscountCodesDataStore(CodesDataStore):
 
         The discount code is removed from the list of available discount codes
         """
+        cls.read_from_json()
         for code in cls.codes:
             if code.brand_id == brand_id:
                 cls.remove_discount_code(code)
@@ -97,6 +102,7 @@ class UserCodesDataStore(CodesDataStore):
     @classmethod
     def find_code(cls, user_id, brand_id):
         """Find and return a discount code for given user+brand combo, if it exists."""
+        cls.read_from_json()
         for code in cls.codes:
             if code.user_id == user_id and code.brand_id == brand_id:
                 return code
