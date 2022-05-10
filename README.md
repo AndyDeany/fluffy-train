@@ -19,6 +19,7 @@ POST `http://127.0.0.1:5000/allocate-code` with headers:
 `{"Authorization": "Bearer SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJVQa"}` and json payload:
 `{"brand_id": 1ec1e6bc-7906-4859-8edc-eddf6185ced8}`.
 
+---
 
 ### Documentation
 
